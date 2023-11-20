@@ -1,5 +1,5 @@
+import os
 from data_processor.common.file_reader import FileReader
-
 class ConfigurationReader:
 
     def __init__(self, file_name=None):
@@ -65,9 +65,12 @@ class ConfigurationReader:
         return self._config_data.get('input_dir', '')
 
     @property
-    def mongo_db_url(self):
-        print(f"self._config : {self._config_data}")
-        return f"mongodb://{self.mongo_host}:{self.mongo_port}/{self.mongo_db_name}"
+    def mongo_db_url(self, user=None, password=None):
+        user = user if user else os.getenv('MONGO_INITDB_ROOT_USERNAME')
+        password = password if password else os.getenv('MONGO_INITDB_ROOT_PASSWORD')
+        if user and password:
+            return f"mongodb://root:rootpassword@{self.mongo_host}:{self.mongo_port}/?authSource=admin&readPreference=primary&ssl=false&directConnection=true"
+        raise Exception("Please set the environment variables MONGO_INITDB_ROOT_USERNAME and MONGO_INITDB_ROOT_PASSWORD, or provide the user and password as arguments")
 
     @input_path.setter
     def input_path(self, value):

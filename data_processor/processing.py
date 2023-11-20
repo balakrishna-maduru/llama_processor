@@ -1,13 +1,14 @@
 import os
-import json
 from llama_index import SimpleDirectoryReader
 from llama_index.storage.docstore import MongoDocumentStore
 from data_processor.common.arg_parser import ArgParser
 from data_processor.base_prcessor import BaseProcessor
 from data_processor.common.document_writer import DocumentWriter
 
+
 class Main(BaseProcessor):
     """Main class for the data processor application that reads the input files and writes the output files"""
+
     def __init__(self, configurations):
         super().__init__(configurations)
 
@@ -22,24 +23,26 @@ class Main(BaseProcessor):
         elif isinstance(input_files, str) and os.path.isfile(input_files):
             self.process_list_of_files([input_files])
         else:
-            raise Exception("Invalid input, please provide a valid input file or directory, or a list of files")
+            raise Exception(
+                "Invalid input, please provide a valid input file or directory, or a list of files")
 
     def process_directory(self, input_dir):
+        """Reads a directory of files and writes the output to the output directory"""
         documents = SimpleDirectoryReader(input_dir=input_dir).load_data()
         self.writer(documents)
 
     def process_list_of_files(self, input_files):
+        """Reads a list of files and writes the output to the output directory"""
         for files in input_files:
             document = SimpleDirectoryReader(input_files=[files]).load_data()
             self.writer(document)
 
     def writer(self, data):
-        self.store.insert_documents(data)
+        """Writes the output files to the output directory and archives the input files if required"""
+        self.sentance_splitter(data)
+        self.store.add_documents(data)
         if self.configurations.backup_archive:
             DocumentWriter(data)
-        
-
-            
 
     def _read_directory(self, files):
         """Reads a directory of files and writes the output to the output directory"""

@@ -1,5 +1,6 @@
 import os
-from data_processor.store.mongo_db import MongoDB
+from llama_index.node_parser import SentenceSplitter
+from llama_index.storage.docstore import MongoDocumentStore
 from data_processor.common.config_reader import ConfigurationReader
 
 class BaseProcessor:
@@ -10,13 +11,15 @@ class BaseProcessor:
             self.configurations = ConfigurationReader(configurations)
         else:
             raise Exception("Invalid configuration, please provide a valid configuration file or a ConfigurationReader object")
-        self._mongo_db = MongoDB(database_url=self.configurations.mongo_db_url, database_name=self.configurations.mongo_db_name)
+        self.__docstore = MongoDocumentStore.from_uri(uri=self.configurations.mongo_db_url, db_name=self.configurations.mongo_db_name)
 
     @property
     def store(self):
-        return self._mongo_db
+        return self.__docstore
     
     @store.setter
     def store(self, value):
-        self._mongo_db = value
+        self.__docstore = value
 
+    def sentance_splitter(self, data):
+        return SentenceSplitter().get_nodes_from_documents(data)
