@@ -1,51 +1,58 @@
-# test_file_reader.py
 import unittest
-import os
+from unittest.mock import mock_open, patch
 from data_processor.common.file_reader import FileReader
+
 
 class TestFileReader(unittest.TestCase):
     def setUp(self):
-        self.yaml_file_path = 'test.yaml'
-        self.json_file_path = 'test.json'
-        self.csv_file_path = 'test.csv'
-
-        # Create test files
-        with open(self.yaml_file_path, 'w') as file:
-            file.write("key: value")
-
-        with open(self.json_file_path, 'w') as file:
-            file.write('{"key": "value"}')
-
-        with open(self.csv_file_path, 'w') as file:
-            file.write("name,age\nJohn,30\nJane,25")
-
-    def tearDown(self):
-        # Clean up test files
-        file_paths = [self.yaml_file_path, self.json_file_path, self.csv_file_path]
-        for file_path in file_paths:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-
-    def test_read_yaml(self):
-        reader = FileReader(self.yaml_file_path)
-        data = reader.read_file()
-        self.assertEqual(data, {'key': 'value'})
+        # Create instances of FileReader for testing
+        self.json_processor = FileReader('data.json')
+        self.yaml_processor = FileReader('data.yaml')
+        self.csv_processor = FileReader('example.csv')
+        self.ini_processor = FileReader('config.ini')
+        self.zip_processor = FileReader('archive.zip')
+        self.pdf_processor = FileReader('example.pdf')
 
     def test_read_json(self):
-        reader = FileReader(self.json_file_path)
-        data = reader.read_file()
-        self.assertEqual(data, {'key': 'value'})
+        # Mock the open function to simulate reading a JSON file
+        with patch('builtins.open', mock_open(read_data='{"key": "value"}')):
+            result = self.json_processor.read_json()
+        self.assertEqual(result, {'key': 'value'})
+
+    def test_read_yaml(self):
+        # Mock the open function to simulate reading a YAML file
+        with patch('builtins.open', mock_open(read_data='key: value')):
+            result = self.yaml_processor.read_yaml()
+        self.assertEqual(result, {'key': 'value'})
 
     def test_read_csv(self):
-        reader = FileReader(self.csv_file_path)
-        data = reader.read_file()
-        expected_data = [{'name': 'John', 'age': '30'}, {'name': 'Jane', 'age': '25'}]
-        self.assertEqual(data, expected_data)
+        # Mock the open function to simulate reading a CSV file
+        with patch('builtins.open', mock_open(read_data='1,John\n2,Jane\n3,Bob')):
+            result = self.csv_processor.read_csv()
+        self.assertEqual(result, [['1', 'John'], ['2', 'Jane'], ['3', 'Bob']])
 
-    def test_unsupported_format(self):
-        reader = FileReader('test.txt')
-        with self.assertRaises(ValueError):
-            reader.read_file()
+    def test_read_ini(self):
+        # Mock the open function to simulate reading an INI file
+        with patch('builtins.open', mock_open(read_data='[Section]\nkey=value')):
+            result = self.ini_processor.read_ini()
+        self.assertEqual(result['Section']['key'], 'value')
+
+    def test_read_zip(self):
+        # Mock the zipfile.ZipFile to simulate reading a ZIP file
+        with patch('zipfile.ZipFile') as mock_zipfile:
+            mock_zipfile.return_value.__enter__.return_value.read.return_value = b'zip_content'
+            result = self.zip_processor.read_zip()
+        self.assertEqual(result, b'zip_content')
+
+    def test_read_pdf(self):
+        # Mock the open function to simulate reading a PDF file
+        with patch('builtins.open', mock_open(read_data='pdf_content')):
+            # Mock PyPDF2.PdfReader to simulate reading a PDF file
+            with patch('PyPDF2.PdfReader') as mock_pdf_reader:
+                mock_pdf_reader.return_value.pages.__getitem__.return_value.extract_text.return_value = 'page_content'
+                result = self.pdf_processor.read_pdf()
+        self.assertEqual(result, ['page_content'])
+
 
 if __name__ == '__main__':
     unittest.main()
