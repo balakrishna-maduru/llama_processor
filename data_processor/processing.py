@@ -1,8 +1,7 @@
 import os
 from llama_index import SimpleDirectoryReader
-from llama_index.storage.docstore import MongoDocumentStore
-from data_processor.common.arg_parser import ArgParser
 from data_processor.base_prcessor import BaseProcessor
+from data_processor.common.arg_parser import ArgParser
 from data_processor.common.document_writer import DocumentWriter
 
 
