@@ -8,4 +8,4 @@ Main:
     backup:
         archive: true
         archive_dir: "/Users/balakrishnamaduru/Documents/git/llama_processor/resources/output/"
-    input_dir: "/Users/balakrishnamaduru/Documents/git/llama_processor/resources/data/pdf_data/"
+    input_dir: "/Users/balakrishnamaduru/Desktop/lyft_2021.pdf"
